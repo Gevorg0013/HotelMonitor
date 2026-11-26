@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/API/">
+    <Project Path="HotelMonitor.Api/HotelMonitor.Api.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/" />
+  <Folder Name="/Infrastructure/Api/">
+    <Project Path="HotelMonitor.Api.Model/HotelMonitor.Api.Model.csproj" />
+    <Project Path="HotelMonitor.Api.Service/HotelMonitor.Api.Service.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/Core/">
+    <Project Path="HotelMonitor.Core.DataLayer/HotelMonitor.Core.DataLayer.csproj" />
+    <Project Path="HotelMonitor.Core.Model/HotelMonitor.Core.Model.csproj" />
+    <Project Path="HotelMonitor.Core.Service/HotelMonitor.Core.Service.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/Signalling/">
+    <Project Path="HotelMonitor.SignallingHub/HotelMonitor.SignallingHub.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="HotelMonitor.Common/HotelMonitor.Common.csproj" />
+    <Project Path="HotelMonitor.DataAccess.Repository/HotelMonitor.DataAccess.Repository.csproj" />
+    <Project Path="HotelMonitor.Security/HotelMonitor.Security.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="HotelMonitor.Tests/HotelMonitor.Tests.csproj" />
+  </Folder>
+</Solution>

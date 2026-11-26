@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
+    <ProjectReference Include="..\HotelMonitor.Api.Model\HotelMonitor.Api.Model.csproj" />
+    <ProjectReference Include="..\HotelMonitor.Common\HotelMonitor.Common.csproj" />
+    <ProjectReference Include="..\HotelMonitor.Core.DataLayer\HotelMonitor.Core.DataLayer.csproj" />
+    <ProjectReference Include="..\HotelMonitor.Core.Service\HotelMonitor.Core.Service.csproj" />
+    <ProjectReference Include="..\HotelMonitor.Security\HotelMonitor.Security.csproj" />
+  </ItemGroup>
+
+</Project>

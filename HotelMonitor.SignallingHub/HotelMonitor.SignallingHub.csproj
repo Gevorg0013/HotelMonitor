@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\HotelMonitor.Api.Model\HotelMonitor.Api.Model.csproj" />
+    <ProjectReference Include="..\HotelMonitor.Api.Service\HotelMonitor.Api.Service.csproj" />
+    <ProjectReference Include="..\HotelMonitor.Security\HotelMonitor.Security.csproj" />
+  </ItemGroup>
+
+</Project>
