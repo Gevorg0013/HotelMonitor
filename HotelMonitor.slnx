@@ -20,7 +20,4 @@
     <Project Path="HotelMonitor.DataAccess.Repository/HotelMonitor.DataAccess.Repository.csproj" />
     <Project Path="HotelMonitor.Security/HotelMonitor.Security.csproj" />
   </Folder>
-  <Folder Name="/Tests/">
-    <Project Path="HotelMonitor.Tests/HotelMonitor.Tests.csproj" />
-  </Folder>
 </Solution>
