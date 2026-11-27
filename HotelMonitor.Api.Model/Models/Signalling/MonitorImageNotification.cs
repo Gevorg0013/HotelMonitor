@@ -1,3 +1,10 @@
 namespace HotelMonitor.Api.Models;
 
-public sealed record MonitorImageNotification(int Id, int SequenceNumber, string FileName, string ContentType, DateTime CreatedAt);
+public sealed class MonitorImageNotification
+{
+    public int Id { get; set; }
+    public int SequenceNumber { get; set; }
+    public string FileName { get; set; }
+    public string ContentType { get; set; }
+    public DateTime CreatedAt { get; set; }
+}

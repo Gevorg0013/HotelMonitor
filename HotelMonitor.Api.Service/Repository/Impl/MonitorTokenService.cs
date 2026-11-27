@@ -11,7 +11,7 @@ namespace HotelMonitor.Api.Service;
 
 public sealed class MonitorTokenService(IOptions<JwtOptions> options) : IMonitorTokenService
 {
-    public (string Token, int ExpiresIn) Create(AuthUser monitor)
+    public (string Token, int ExpiresIn) Create(MonitorIdentityAuth monitor)
     {
         var jwt = options.Value;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey));

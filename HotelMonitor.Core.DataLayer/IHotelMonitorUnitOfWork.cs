@@ -6,7 +6,7 @@ namespace HotelMonitor.Core.DataLayer.Repository;
 
 public interface IHotelMonitorUnitOfWork
 {
-    IGenericRepository<AuthUser> AuthUserRepository { get; }
+    IGenericRepository<MonitorIdentityAuth> AuthUserRepository { get; }
 
     IGenericRepository<MonitorImage> MonitorImageRepository { get; }
 

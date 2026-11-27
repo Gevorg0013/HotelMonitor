@@ -6,10 +6,10 @@ namespace HotelMonitor.Core.DataLayer.Repository;
 
 public class HotelMonitorUnitOfWork(HotelMonitorDbContext context) : IHotelMonitorUnitOfWork
 {
-    private IGenericRepository<AuthUser>? _authUserRepository;
+    private IGenericRepository<MonitorIdentityAuth>? _authUserRepository;
     private IGenericRepository<MonitorImage>? _monitorImageRepository;
 
-    public IGenericRepository<AuthUser> AuthUserRepository => _authUserRepository ??= new GenericRepository<AuthUser>(context);
+    public IGenericRepository<MonitorIdentityAuth> AuthUserRepository => _authUserRepository ??= new GenericRepository<MonitorIdentityAuth>(context);
 
     public IGenericRepository<MonitorImage> MonitorImageRepository => _monitorImageRepository ??= new GenericRepository<MonitorImage>(context);
 

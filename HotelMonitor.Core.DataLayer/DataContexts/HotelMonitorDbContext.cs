@@ -7,7 +7,7 @@ namespace HotelMonitor.Core.DataLayer;
 
 public class HotelMonitorDbContext(DbContextOptions<HotelMonitorDbContext> options) : DbContext(options), IGenericDbContext
 {
-    public DbSet<AuthUser> AuthUsers => Set<AuthUser>();
+    public DbSet<MonitorIdentityAuth> AuthUsers => Set<MonitorIdentityAuth>();
     public DbSet<MonitorImage> MonitorImages => Set<MonitorImage>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
@@ -17,10 +17,9 @@ public class HotelMonitorDbContext(DbContextOptions<HotelMonitorDbContext> optio
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<AuthUser>(e =>
+        modelBuilder.Entity<MonitorIdentityAuth>(e =>
         {
-            // VTM already owns dbo.Users in the shared database.
-            e.ToTable("IdentityMonitorManager");
+            e.ToTable("MonitorIdentityAuth");
             e.Property(x => x.Id).UseIdentityColumn();
             e.Property(x => x.Username).HasMaxLength(100);
             e.Property(x => x.PasswordHash).HasMaxLength(512);
@@ -30,7 +29,7 @@ public class HotelMonitorDbContext(DbContextOptions<HotelMonitorDbContext> optio
 
         modelBuilder.Entity<MonitorImage>(e =>
         {
-            e.ToTable("Images");
+            e.ToTable("MonitorImage");
             e.Property(x => x.Id).UseIdentityColumn();
             e.Property(x => x.FileName).HasMaxLength(255);
             e.Property(x => x.ContentType).HasMaxLength(50);

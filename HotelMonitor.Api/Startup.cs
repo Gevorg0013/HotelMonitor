@@ -31,7 +31,7 @@ public class Startup
             sql => sql.MigrationsHistoryTable("__HotelMonitorMigrationsHistory")));
 
         services.AddScoped<IHotelMonitorUnitOfWork, HotelMonitorUnitOfWork>();
-        services.AddScoped<IPasswordHasher<AuthUser>, PasswordHasher<AuthUser>>();
+        services.AddScoped<IPasswordHasher<MonitorIdentityAuth>, PasswordHasher<MonitorIdentityAuth >>();
         services.AddSingleton<IMonitorTokenService, MonitorTokenService>();
         services.AddSingleton<IMonitorImageNotifier, MonitorImageNotifier>();
         services.AddScoped<IMonitorAuthService, MonitorAuthService>();

@@ -26,8 +26,8 @@ public sealed class MonitorImageService(
             x.FileSize,
             x.CreatedAt);
 
-    public async Task<(BaseResponse, ICollection<MonitorImageResponse>?)> UploadAsync(
-        ImageUploadRequest model)
+
+    public async Task<(BaseResponse, ICollection<MonitorImageResponse>?)> UploadAsync(ImageUploadRequest model)
     {
         if (model.Files is null || model.Files.Count == 0)
             return (new BaseResponse(HttpStatusCode.BadRequest, "No files were uploaded."), null);
@@ -58,13 +58,16 @@ public sealed class MonitorImageService(
 
             var data = new byte[file.Length];
 
-            await using var stream = file.OpenReadStream();
-            await stream.ReadExactlyAsync(data);
+            await using (var stream = file.OpenReadStream())
+            {
+                await stream.ReadExactlyAsync(data);
+            }
 
             var contentType = ImageSignature.Detect(data);
 
             if (contentType is null)
-                return (new BaseResponse(HttpStatusCode.UnsupportedMediaType, $"File '{file.FileName}' is not a JPEG, PNG or WebP image."), null);
+                return (new BaseResponse(HttpStatusCode.UnsupportedMediaType,
+                    $"File '{file.FileName}' is not a JPEG, PNG or WebP image."), null);
 
             images.Add(new MonitorImage
             {
@@ -79,26 +82,26 @@ public sealed class MonitorImageService(
 
         var sequenceNumbers = model.SequenceNumbers;
 
-        var sequenceExists = await unitOfWork.MonitorImageRepository.AnyAsync(
-            x => sequenceNumbers.Contains(x.SequenceNumber));
-
-        if (sequenceExists)
+        if (await unitOfWork.MonitorImageRepository.AnyAsync(
+            x => sequenceNumbers.Contains(x.SequenceNumber)))
+        {
             return (new BaseResponse(HttpStatusCode.Conflict,
                 "A SequenceNumber is already used by an existing image."), null);
+        }
 
         foreach (var image in images)
             await unitOfWork.MonitorImageRepository.AddAsync(image);
 
         await unitOfWork.SaveChangesAsync();
 
-        var notifications = images.Select(x =>
-            new MonitorImageNotification(
-                x.Id,
-                x.SequenceNumber,
-                x.FileName,
-                x.ContentType,
-                x.CreatedAt))
-            .ToList();
+        var notifications = images.Select(x => new MonitorImageNotification
+        {
+            Id = x.Id,
+            SequenceNumber = x.SequenceNumber,
+            FileName = x.FileName,
+            ContentType = x.ContentType,
+            CreatedAt = x.CreatedAt
+        }).ToList();
 
         await notifier.NotifyAsync(notifications);
 

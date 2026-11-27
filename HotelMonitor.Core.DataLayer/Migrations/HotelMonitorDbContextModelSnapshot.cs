@@ -22,7 +22,7 @@ namespace HotelMonitor.Core.DataLayer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("HotelMonitor.Core.DataLayer.Entities.AuthUser", b =>
+            modelBuilder.Entity("HotelMonitor.Core.DataLayer.Entities.MonitorIdentityAuth", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace HotelMonitor.Core.DataLayer.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("IdentityMonitorManager", (string)null);
+                    b.ToTable("MonitorIdentityAuth", (string)null);
                 });
 
             modelBuilder.Entity("HotelMonitor.Core.DataLayer.Entities.MonitorImage", b =>
@@ -92,7 +92,7 @@ namespace HotelMonitor.Core.DataLayer.Migrations
                     b.HasIndex("SequenceNumber")
                         .IsUnique();
 
-                    b.ToTable("Images", (string)null);
+                    b.ToTable("MonitorImage", (string)null);
                 });
 #pragma warning restore 612, 618
         }

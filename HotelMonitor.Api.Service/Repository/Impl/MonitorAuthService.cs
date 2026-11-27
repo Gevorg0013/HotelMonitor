@@ -10,7 +10,7 @@ namespace HotelMonitor.Api.Service;
 
 public sealed class MonitorAuthService(
     IHotelMonitorUnitOfWork unitOfWork,
-    IPasswordHasher<AuthUser> hasher,
+    IPasswordHasher<MonitorIdentityAuth> hasher,
     IMonitorTokenService tokens)
     : BaseCoreService(unitOfWork), IMonitorAuthService
 {

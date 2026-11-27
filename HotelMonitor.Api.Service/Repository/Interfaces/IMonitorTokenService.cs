@@ -4,5 +4,5 @@ namespace HotelMonitor.Api.Service;
 
 public interface IMonitorTokenService
 {
-    (string Token, int ExpiresIn) Create(AuthUser monitor);
+    (string Token, int ExpiresIn) Create(MonitorIdentityAuth monitor);
 }
