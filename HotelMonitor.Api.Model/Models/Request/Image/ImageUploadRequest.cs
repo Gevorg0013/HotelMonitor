@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Http;
-
 namespace HotelMonitor.Api.Models;
 
-public sealed class ImageUploadRequest
+public sealed record ImageUploadRequest
 {
-    public List<IFormFile> Files { get; set; } = [];
+    public List<ImageUploadItem> Images { get; set; } = [];
 
-    public List<int> SequenceNumbers { get; set; } = [];
 }

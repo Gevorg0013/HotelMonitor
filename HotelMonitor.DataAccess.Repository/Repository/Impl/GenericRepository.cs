@@ -15,14 +15,17 @@ public class GenericRepository<TSource>(IGenericDbContext context) : IGenericRep
         Expression<Func<TSource, TResult>> querySelector) =>
         _dbSet.AsNoTracking().Where(queryConditions).Select(querySelector).FirstOrDefaultAsync();
 
-    public async Task<ICollection<TResult>> GetAllAsync<TResult, TKey>(
-        Expression<Func<TSource, TResult>> querySelector,
-        Expression<Func<TSource, TKey>> orderBy) =>
-        await _dbSet.AsNoTracking().OrderBy(orderBy).Select(querySelector).ToListAsync();
+    public async Task<ICollection<TSource>> GetAllAsync()
+    {
+        return await _dbSet.ToListAsync();
+    }
 
     public Task<bool> AnyAsync(Expression<Func<TSource, bool>> queryConditions) => _dbSet.AnyAsync(queryConditions);
 
     public async Task AddAsync(TSource source) => await _dbSet.AddAsync(source);
+
+    public async Task AddRangeAsync(IEnumerable<TSource> sources)
+    => await _dbSet.AddRangeAsync(sources);
 
     public void Update(TSource source)
     {

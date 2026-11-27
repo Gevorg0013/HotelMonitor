@@ -1,9 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace HotelMonitor.Api.Models;
 
-public sealed class MonitorLoginRequest
+public sealed record MonitorLoginRequest
 {
-    [Required, MaxLength(100)] public string Username { get; set; } = "";
-    [Required, MaxLength(128)] public string Password { get; set; } = "";
+    public string Username { get; set; } = "";
+    public string Password { get; set; } = "";
 }

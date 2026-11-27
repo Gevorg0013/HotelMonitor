@@ -33,6 +33,7 @@ public class HotelMonitorDbContext(DbContextOptions<HotelMonitorDbContext> optio
             e.Property(x => x.Id).UseIdentityColumn();
             e.Property(x => x.FileName).HasMaxLength(255);
             e.Property(x => x.ContentType).HasMaxLength(50);
+            e.Property(x => x.WebPath).HasMaxLength(500);
             // byte[] maps to varbinary(max) by default on SQL Server.
             // The client supplies SequenceNumber; the unique index rejects a number that is already used.
             e.HasIndex(x => x.SequenceNumber).IsUnique();

@@ -4,5 +4,5 @@ namespace HotelMonitor.SignallingHub;
 
 public interface IMonitorHub
 {
-    Task NewMonitorImages(IReadOnlyCollection<MonitorImageNotification> images);
+    Task OnSendImage(IReadOnlyCollection<MonitorImageNotification> images);
 }

@@ -488,3 +488,6 @@ $RECYCLE.BIN/
 
 # Local secrets (connection string, JWT signing key) - never commit
 **/appsettings.Development.json
+
+# Uploaded images
+**/AppFiles/

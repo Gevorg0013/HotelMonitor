@@ -10,6 +10,4 @@ public interface IMonitorImageService : IBaseCoreService
     Task<(BaseResponse, ICollection<MonitorImageResponse>?)> UploadAsync(ImageUploadRequest model);
 
     Task<(BaseResponse, ICollection<MonitorImageResponse>)> GetAllAsync();
-
-    Task<(BaseResponse, ImageContentResponse?)> GetContentAsync(int id);
 }

@@ -12,11 +12,10 @@ public sealed class MonitorImageNotifier(IHubContext<MonitorHub, IMonitorHub> hu
     {
         try
         {
-            await hub.Clients.All.NewMonitorImages(images);
+            await hub.Clients.All.OnSendImage(images);
         }
         catch (Exception ex)
         {
-            // The images are already committed. Failing the request would make the client upload them twice.
             logger.LogError(ex, "Failed to broadcast {Count} uploaded images", images.Count);
         }
     }

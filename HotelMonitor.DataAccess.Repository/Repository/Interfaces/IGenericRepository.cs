@@ -10,13 +10,13 @@ public interface IGenericRepository<TSource> where TSource : class
         Expression<Func<TSource, bool>> queryConditions,
         Expression<Func<TSource, TResult>> querySelector);
 
-    Task<ICollection<TResult>> GetAllAsync<TResult, TKey>(
-        Expression<Func<TSource, TResult>> querySelector,
-        Expression<Func<TSource, TKey>> orderBy);
+    Task<ICollection<TSource>> GetAllAsync();
 
     Task<bool> AnyAsync(Expression<Func<TSource, bool>> queryConditions);
 
     Task AddAsync(TSource source);
+
+    Task AddRangeAsync(IEnumerable<TSource> sources);
 
     void Update(TSource source);
 

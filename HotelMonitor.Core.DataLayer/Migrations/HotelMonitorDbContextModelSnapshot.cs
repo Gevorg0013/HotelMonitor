@@ -80,12 +80,13 @@ namespace HotelMonitor.Core.DataLayer.Migrations
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
 
-                    b.Property<byte[]>("ImageData")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
                     b.Property<int>("SequenceNumber")
                         .HasColumnType("int");
+
+                    b.Property<string>("WebPath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 

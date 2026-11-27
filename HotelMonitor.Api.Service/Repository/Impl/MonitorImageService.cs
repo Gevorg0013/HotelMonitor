@@ -1,60 +1,48 @@
-
 using HotelMonitor.Api.Models;
 using HotelMonitor.Api.Service.Helpers;
 using HotelMonitor.Common.Models;
 using HotelMonitor.Core.DataLayer.Entities;
 using HotelMonitor.Core.DataLayer.Repository;
 using HotelMonitor.Core.Service;
-using System.Linq.Expressions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 
 namespace HotelMonitor.Api.Service;
 
-public sealed class MonitorImageService(
+public class MonitorImageService(
     IHotelMonitorUnitOfWork unitOfWork,
-    IMonitorImageNotifier notifier)
+    IMonitorImageNotifier notifier,
+    IConfiguration configuration,
+    IWebHostEnvironment environment)
     : BaseCoreService(unitOfWork), IMonitorImageService
 {
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
-
-    private static readonly Expression<Func<MonitorImage, MonitorImageResponse>> ToResponse =
-        x => new MonitorImageResponse(
-            x.Id,
-            x.SequenceNumber,
-            x.FileName,
-            x.ContentType,
-            x.FileSize,
-            x.CreatedAt);
-
+    public const string UploadRequestPath = "/AppFiles";
 
     public async Task<(BaseResponse, ICollection<MonitorImageResponse>?)> UploadAsync(ImageUploadRequest model)
     {
-        if (model.Files is null || model.Files.Count == 0)
-            return (new BaseResponse(HttpStatusCode.BadRequest, "No files were uploaded."), null);
+        if (model.Images is null || model.Images.Count == 0)
+            return (new BaseResponse(HttpStatusCode.UnprocessableEntity, "No files were uploaded."), null);
 
-        if (model.SequenceNumbers is null ||
-            model.Files.Count != model.SequenceNumbers.Count)
-            return (new BaseResponse(HttpStatusCode.BadRequest,
-                "Each file needs exactly one SequenceNumber."), null);
+        if (model.Images.Any(x => x.File is null))
+            return (new BaseResponse(HttpStatusCode.UnprocessableEntity, "Each image must contain a file."), null);
 
-        if (model.SequenceNumbers.Any(x => x < 1))
-            return (new BaseResponse(HttpStatusCode.BadRequest,
-                "SequenceNumber must be 1 or greater."), null);
+        if (model.Images.Any(x => x.SequenceId < 1))
+            return (new BaseResponse(HttpStatusCode.UnprocessableEntity, "SeqId must be 1 or greater."), null);
 
-        if (model.SequenceNumbers.Distinct().Count() != model.SequenceNumbers.Count)
-            return (new BaseResponse(HttpStatusCode.BadRequest,
-                "SequenceNumber values must be unique within the request."), null);
+        var sequenceNumbers = model.Images.Select(x => x.SequenceId).ToList();
 
-        var images = new List<MonitorImage>(model.Files.Count);
+        var images = new List<MonitorImage>(model.Images.Count);
+        var imageData = new List<byte[]>(model.Images.Count);
         var now = DateTime.UtcNow;
 
-        for (var i = 0; i < model.Files.Count; i++)
+        foreach (var item in model.Images)
         {
-            var file = model.Files[i];
+            var file = item.File;
 
             if (file.Length == 0 || file.Length > MaxFileSizeBytes)
-                return (new BaseResponse(HttpStatusCode.BadRequest,
-                    $"File '{file.FileName}' is empty or larger than 10 MB."), null);
+                return (new BaseResponse(HttpStatusCode.UnprocessableEntity, $"File '{file.FileName}' is empty or larger than 10 MB."), null);
 
             var data = new byte[file.Length];
 
@@ -66,33 +54,48 @@ public sealed class MonitorImageService(
             var contentType = ImageSignature.Detect(data);
 
             if (contentType is null)
-                return (new BaseResponse(HttpStatusCode.UnsupportedMediaType,
-                    $"File '{file.FileName}' is not a JPEG, PNG or WebP image."), null);
+                return (new BaseResponse(HttpStatusCode.UnsupportedMediaType, $"File '{file.FileName}' is not a JPEG, PNG or WebP image."), null);
 
             images.Add(new MonitorImage
             {
-                SequenceNumber = model.SequenceNumbers[i],
+                SequenceNumber = item.SequenceId,
                 FileName = Path.GetFileName(file.FileName),
-                ImageData = data,
                 ContentType = contentType,
                 FileSize = data.Length,
                 CreatedAt = now
             });
+            imageData.Add(data);
         }
-
-        var sequenceNumbers = model.SequenceNumbers;
 
         if (await unitOfWork.MonitorImageRepository.AnyAsync(
             x => sequenceNumbers.Contains(x.SequenceNumber)))
         {
-            return (new BaseResponse(HttpStatusCode.Conflict,
-                "A SequenceNumber is already used by an existing image."), null);
+            return (new BaseResponse(HttpStatusCode.Conflict, "A SeqId is already used by an existing image."), null);
         }
 
-        foreach (var image in images)
-            await unitOfWork.MonitorImageRepository.AddAsync(image);
+        var savedFiles = new List<string>(images.Count);
 
-        await unitOfWork.SaveChangesAsync();
+        try
+        {
+            for (var i = 0; i < images.Count; i++)
+            {
+                var image = images[i];
+                var (webPath, serverPath) = await UploadAndSaveImage(imageData[i], image.ContentType, image.SequenceNumber);
+                savedFiles.Add(serverPath);
+                image.WebPath = webPath;
+            }
+
+            await unitOfWork.MonitorImageRepository.AddRangeAsync(images);
+
+            await unitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            foreach (var serverPath in savedFiles)
+                File.Delete(serverPath);
+
+            throw;
+        }
 
         var notifications = images.Select(x => new MonitorImageNotification
         {
@@ -100,6 +103,7 @@ public sealed class MonitorImageService(
             SequenceNumber = x.SequenceNumber,
             FileName = x.FileName,
             ContentType = x.ContentType,
+            WebPath = x.WebPath,
             CreatedAt = x.CreatedAt
         }).ToList();
 
@@ -111,31 +115,50 @@ public sealed class MonitorImageService(
             x.FileName,
             x.ContentType,
             x.FileSize,
+            x.WebPath,
             x.CreatedAt))
             .ToList();
 
         return (new BaseResponse(HttpStatusCode.Created), response);
     }
 
-    public async Task<(BaseResponse, ICollection<MonitorImageResponse>)> GetAllAsync()
+    private async Task<(string webPath, string serverPath)> UploadAndSaveImage(byte[] data, string contentType, int sequenceNumber)
     {
-        var images = await unitOfWork.MonitorImageRepository.GetAllAsync(
-            ToResponse,
-            x => x.SequenceNumber);
+        var fileName = sequenceNumber + contentType switch
+        {
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            _ => ".jpg"
+        };
 
-        return (new BaseResponse(), images);
+        var fileDirectory = GetUploadDirectory(configuration, environment);
+
+        Directory.CreateDirectory(fileDirectory);
+        var filePath = Path.Combine(fileDirectory, fileName);
+
+        await File.WriteAllBytesAsync(filePath, data);
+
+        return ($"{UploadRequestPath}/{fileName}", filePath);
     }
 
-    public async Task<(BaseResponse, ImageContentResponse?)> GetContentAsync(int id)
-    {
-        var content = await unitOfWork.MonitorImageRepository.GetFirstOrDefaultAsync(
-            x => x.Id == id,
-            x => new ImageContentResponse(x.ImageData, x.ContentType));
+    public static string GetUploadDirectory(IConfiguration configuration, IWebHostEnvironment environment)
+        => Path.Combine(environment.ContentRootPath, configuration.GetSection("UploadPhisicalPath").Value ?? "AppFiles");
 
-        return (
-            new BaseResponse(content is null
-                ? HttpStatusCode.NotFound
-                : HttpStatusCode.OK),
-            content);
+
+    public async Task<(BaseResponse, ICollection<MonitorImageResponse>)> GetAllAsync()
+    {
+        var entities = await unitOfWork.MonitorImageRepository.GetAllAsync();
+
+        var images = entities.Select(x => new MonitorImageResponse(
+            x.Id,
+            x.SequenceNumber,
+            x.FileName,
+            x.ContentType,
+            x.FileSize,
+            x.WebPath,
+            x.CreatedAt
+        )).ToList();
+
+        return (new BaseResponse(), images);
     }
 }
